@@ -21,21 +21,21 @@ loadMoreBtn.addEventListener('click', onLoadMoreBtn);
 onScroll();
 onToTopBtn();
 
-function onSearchForm(e) {
-  e.preventDefault();
-  window.scrollTo({ top: 0 });
-  page = 1;
-  query = e.currentTarget.searchQuery.value.trim();
-  gallery.innerHTML = '';
-  loadMoreBtn.classList.add('is-hidden');
+async function onSearchForm(e) {
+  try {
+    e.preventDefault();
+    window.scrollTo({ top: 0 });
+    page = 1;
+    query = e.currentTarget.searchQuery.value.trim();
+    gallery.innerHTML = '';
+    loadMoreBtn.classList.add('is-hidden');
 
-  if (query === '') {
-    alertNoEmptySearch();
-    return;
-  }
+    if (query === '') {
+      alertNoEmptySearch();
+      return;
+    }
 
-  fetchImages(query, page, perPage)
-    .then(({ data }) => {
+    await fetchImages(query, page, perPage).then(({ data }) => {
       if (data.totalHits === 0) {
         alertNoImagesFound();
       } else {
@@ -47,18 +47,17 @@ function onSearchForm(e) {
           loadMoreBtn.classList.remove('is-hidden');
         }
       }
-    })
-    .catch(error => console.log(error))
-    .finally(() => {
-      searchForm.reset();
     });
+  } catch (error) {
+    console.log(error);
+  } finally {
+    searchForm.reset();
+  }
 }
-
-function onLoadMoreBtn() {
+async function onLoadMoreBtn() {
   page += 1;
-
-  fetchImages(query, page, perPage)
-    .then(({ data }) => {
+  try {
+    await fetchImages(query, page, perPage).then(({ data }) => {
       renderGallery(data.hits);
       simpleLightBox.refresh();
 
@@ -68,8 +67,10 @@ function onLoadMoreBtn() {
         loadMoreBtn.classList.add('is-hidden');
         alertEndOfSearch();
       }
-    })
-    .catch(error => console.log(error));
+    });
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function alertImagesFound(data) {
